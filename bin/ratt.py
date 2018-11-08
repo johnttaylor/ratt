@@ -126,9 +126,11 @@ if __name__ == '__main__':
 
     # interactive mode
     else:
+        
         output.set_output_fd( sys.stdout, logfile )
         output.writeline("")
         output.writeline("---------------- Welcome to Ratt (ver={}) --------------------".format( VERSION) )
+        output.writeline("              (Start time={})".format( utils.append_current_time("", "")) )
         output.writeline("")
 
         while( True ):

@@ -4,9 +4,6 @@
 import utils
 import rattlib
 
-g_verbose = False
-g_debug   = False
-g_fdout   = None
 
 #------------------------------------------------------------------------------
 def load_script( script_name ):
