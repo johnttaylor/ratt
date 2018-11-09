@@ -2,10 +2,9 @@
 """
 Test Tool that automates issuing actions to a Under-Under-Test (UUT)
 ===============================================================================
-usage: ratt [options] --win <executable>
-       ratt [options] --linux <executable>
+usage: ratt [options] --win <executable>...
+       ratt [options] --linux <executable>...
        ratt [options] --comport <comnum>
-       ratt [options] --tcp <socketnum>
        ratt [options] --serialports
        ratt [options] --nouut
        
@@ -36,7 +35,7 @@ Options:
    --stopbits SBIT      Number of Stop bits of the serial port [Default: 1]
 
    --log BASE           Defines the base log file name [Default: ratt.log]
-   --nolog              Disables logging
+   --log                Enables logging
    -v                   Be verbose
    -d, --debug          Enables additional output for debugging HAL
    -h, --help           Display help for common options/usage
@@ -48,6 +47,8 @@ Examples:
     ; UUT is a physical device connected to a Windows PC on COM4
     ratt.py --comport 4
 
+    ; UUT is connect via TCP (on the same PC on port 5002) using Putty's plink 
+    ratt.py --win "E:\\Program Files (x86)\\PuTTY\\plink.exe" -telnet localhost -P 5002
 
 """
 
@@ -57,19 +58,21 @@ import time
 import utils
 import rexpect
 import pexpect
+import config
 from rattlib import output
 from rattlib import std
+from rattlib import uut
 from docopt.docopt import docopt
 from collections import deque
 
-VERSION="0.1"
+VERSION = "0.1"
+
 
 # ------------------------------------------------------------------------------
-# BEGIN
-if __name__ == '__main__':
+def main():
 
     # Parse command line
-    args = docopt(__doc__, version=VERSION)
+    args = docopt(__doc__, version=VERSION, options_first=True)
 
     # Add the ratt directory to the system path (so module can access the 'utils' package
     sys.path.append( __file__ )
@@ -83,26 +86,27 @@ if __name__ == '__main__':
 
     # Open log file (when not disabled)
     logfile = None
-    if (args['--nolog'] == False ):
+    if (args['--log'] == True ):
         logfile = open(utils.append_current_time(args['--log']), "w")
-
 
     ## Created 'Expected' object for a: Windoze executable UUT
     if (args['--win']):
-        io = rexpect.ExpectWindowsConsole(args['<executable>'], logfile)
+        config.g_uut = rexpect.ExpectWindowsConsole(" ".join(args['<executable>']), logfile)
    
     # Created 'Expected' object for a: Linux/Wsl executable UUT
     elif (args['--linux']):
-        io = rexpect.ExpectLinuxConsole(args['<executable>'], logfile)
+        config.g_uut = rexpect.ExpectLinuxConsole(args['<executable>'], logfile)
    
     # Created 'Expected' object for a: UUT via a Windoze COM Port 
     elif (args['--comport']):
         serial = utils.open_serial_port('com' + args['<comnum>'], timeout=0, baudrate=int(args['--baud']), parity=args['--parity'], stopbits=int(args['--stopbits']), bytesize=int(args['--databits']))
-        io = rexpect.ExpectSerial(serial, logfile)
+        config.g_uut = rexpect.ExpectSerial(serial, logfile)
 
     # Create 'Expected' object for a: NO UUT
     elif ( args['--nouut'] ):
-        io = rexpect.ExpectNullConsole(logfile)
+        config.g_uut = rexpect.ExpectNullConsole(logfile)
+
+    print( config.g_uut )
 
     # Enable output
     output.set_verbose_mode( args['-v'] )
@@ -129,8 +133,8 @@ if __name__ == '__main__':
         
         output.set_output_fd( sys.stdout, logfile )
         output.writeline("")
-        output.writeline("---------------- Welcome to Ratt (ver={}) --------------------".format( VERSION) )
-        output.writeline("              (Start time={})".format( utils.append_current_time("", "")) )
+        output.writeline("------------ Welcome to Ratt, this is my Kung-Fu and it is strong! ------------" )
+        output.writeline("                     ver={}. Start time={}".format(VERSION,  utils.append_current_time("", "")) )
         output.writeline("")
 
         while( True ):
@@ -141,3 +145,8 @@ if __name__ == '__main__':
                 exec( line )
             except Exception as e:
                 output.writeline( str(e) )
+
+
+# BEGIN
+if __name__ == '__main__':
+    main()

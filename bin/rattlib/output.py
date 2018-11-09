@@ -2,11 +2,11 @@
     stdout as well as the log file
 """
 
-
 g_verbose = False
 g_debug   = False
 g_fdout   = None
 g_logout  = None
+
 #------------------------------------------------------------------------------
 def write(string, log_only=False):
     """ Write/appends 'string' to the output stream

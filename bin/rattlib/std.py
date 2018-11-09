@@ -2,7 +2,7 @@
 """
 
 import utils
-import rattlib
+from rattlib import output
 
 
 #------------------------------------------------------------------------------
@@ -12,7 +12,7 @@ def load_script( script_name ):
     """
     m,e = utils.importFile( script_name )
     if ( m == None ):
-        rattlib.output.writeline( "Error loading script: (). [{}]".format( e ) )
+        output.writeline( "Error loading script: (). [{}]".format( e ) )
         return None
 
     return m

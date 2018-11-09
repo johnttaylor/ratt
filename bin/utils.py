@@ -5,8 +5,8 @@ import sys
 import imp
 from time import gmtime, strftime
 import serial
+import config
 
-g_utils_import_dictionary = {}
 
 #------------------------------------------------------------------------------
 def append_current_time( base_name, separator='_' ):
@@ -85,16 +85,15 @@ def importCode(code, name):
         by dynamically importing the given code.  If the module has already
         been imported - then it is returned and not imported a second time.
     """
-    global g_utils_import_dictionary
    
     # Check if 'code' has already been loaded
-    if (name in g_utils_import_dictionary):
-        return g_utils_import_dictionary[name]
+    if (name in config.g_utils_import_dictionary):
+        return config.g_utils_import_dictionary[name]
 
     # Load the 'code' into the memory
     try:
         module = imp.new_module(name)
-        g_utils_import_dictionary[name] = module
+        config.g_utils_import_dictionary[name] = module
         exec code in module.__dict__
         return module
 
@@ -123,8 +122,8 @@ def importFile(filename, search_paths=None):
     modname  = os.path.splitext(os.path.split(filename)[1])[0]
 
     # Check for already loaded
-    if (modname in g_utils_import_dictionary):
-        return g_utils_import_dictionary[modname],fullpath
+    if (modname in config.g_utils_import_dictionary):
+        return config.g_utils_import_dictionary[modname],fullpath
 
     # No search paths...
     if (search_paths == None):
