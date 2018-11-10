@@ -17,13 +17,14 @@ Arguments:
    --nouut              Does NOT connect to any UUT
 
 Options:
-   --input TCFILE       Launchs ratt in script mode and begins executing the
-                        TCFILE script.  TCFILE s assumed to be Test Case file.
-                        A Test case file must be a valid python file that 
+   --input TSFILE       Launchs ratt in script mode and begins executing the
+                        TSFILE script.  TSFILE s assumed to be Test Suite file.
+                        A Test Suite file must be a valid python file that 
                         contains a method named main() that takes no arguments 
                         and returns a positive integer.  A return value of zero 
-                        indicates 'pass'; a value > zero is a 'failed' test 
-                        case.
+                        indicates that the test suited 'passed' all of its
+                        test cases; a value > zero indicates one or more test
+                        suite's test cases failed.
    --path1 PATH         Optional directory/search path used when opening
                         script files.  This path is used if the file being
                         opening can not be found in/relative to the CWD
@@ -43,7 +44,9 @@ Options:
    --logfile BASE       Defines the base log file name [Default: ratt.log]
    --log                Enables logging
    -v                   Be verbose
+   --vlog               Be verbose in the log (and terse on console ouput)
    -d, --debug          Enables additional output for debugging RATT scripts
+   --dlog               Enables debug output in the log file ONLY
    -h, --help           Display help for common options/usage
 
 Examples:
@@ -53,8 +56,9 @@ Examples:
     ; UUT is a physical device connected to a Windows PC on COM4
     ratt.py --comport 4
 
-    ; UUT is connect via TCP (on the same PC on port 5002) using Putty's plink 
-    ratt.py --win "E:\\Program Files (x86)\\PuTTY\\plink.exe" -telnet localhost -P 5002
+    ; Run mysuite.py script with a UUT connected via TCP (on the same PC on 
+    ; port 5002) using Putty's plink 
+    ratt.py --input mysuite.py --win "E:\\Program Files (x86)\\PuTTY\\plink.exe" -telnet localhost -P 5002
 
 """
 
@@ -98,6 +102,10 @@ def main():
     # Open log file (when not disabled)
     logfile = None
     if (args['--log'] == True):
+        if ( args['--vlog'] ):
+            config.g_verbose_logs = True
+        if ( args['--dlog'] ):
+            config.g_debug_logs = True
         logfile = open(utils.append_current_time(args['--logfile']), "w")
 
     ## Created 'Expected' object for a: Windoze executable UUT
@@ -138,13 +146,13 @@ def main():
 
         start_time = time()
         output.writeline("------------ START: Ratt, ver={}. Start time={}".format(VERSION, strftime("%Y-%m-%d_%H.%M.%S",localtime(start_time))))
-        output.writeline("------------ RUNNING TEST CASE: {}".format(result))
+        output.writeline("------------ RUNNING SUITE CASE: {}".format(result))
         passcode = input.main()
         end_time = time()
         if (passcode != 0):
-            output.writeline("------------ TEST CASE FAILED ({}).".format(passcode))
+            output.writeline("------------ TEST SUITE FAILED ({}).".format(passcode))
         else:
-            output.writeline("------------ TEST CASE PASSED.")
+            output.writeline("------------ TEST SUITE PASSED.")
         output.writeline("------------ END: End time={}, delta={:.2f} mins".format(strftime("%Y-%m-%d_%H.%M.%S",localtime(end_time)), (end_time - start_time) / 60.0))
 
         sys.exit(passcode)

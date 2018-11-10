@@ -64,7 +64,7 @@ class ExpectLinuxConsole(object):
     def flush( self ):
         self.child.flush()
 
-    def read_nonblocking( self, size=1, timeout=None ):
+    def read_nonblocking( self, size=1, timeout=-1 ):
         return self.child.read_nonblocking( size, timeout )
 
     def expect( self, regex_list, timeout=-1, searchwindowsize=-1 ):
@@ -104,7 +104,7 @@ class ExpectSerial(object):
     def flush( self ):
         self.child.flush()
 
-    def read_nonblocking( self, size=1, timeout=None ):
+    def read_nonblocking( self, size=1, timeout=-1 ):
         return self.child.read_nonblocking( size, timeout )
 
     def expect( self, regex_list, timeout=-1, searchwindowsize=-1 ):

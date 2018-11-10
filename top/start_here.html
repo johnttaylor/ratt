@@ -261,6 +261,10 @@ Error message and password prompt
 
 <li>Acknowledgments</li>
 
+<li>Caveats</li>
+
+<li>Command Line Usage</li>
+
 <li>LeftMenu</li>
 
 <li>LeftTitle</li>
@@ -268,6 +272,10 @@ Error message and password prompt
 <li>Licensing</li>
 
 <li>Overview</li>
+
+<li>Recommended Conventions</li>
+
+<li>System Requirements</li>
 
 <li>TopButtons</li>
 
@@ -5314,7 +5322,7 @@ html .solidborders td {  border: 1px solid black; }</pre>
 <div modified="20141230012524223" title="$:/state/toc/Contents-Overview--242358753">
 <pre>open</pre>
 </div>
-<div list="Overview" title="$:/StoryList">
+<div list="[[Recommended Conventions]] [[Command Line Usage]] Overview" title="$:/StoryList">
 <pre></pre>
 </div>
 <div created="20141011164829984" modified="20141020024516096" title="$:/temp/advancedsearch">
@@ -5334,7 +5342,7 @@ html .solidborders td {  border: 1px solid black; }</pre>
     }
 }</pre>
 </div>
-<div created="20141011164514051" modified="20141012060438057" title="$:/temp/NewTagName">
+<div created="20141011164514051" modified="20181110154901703" title="$:/temp/NewTagName">
 <pre></pre>
 </div>
 <div created="20141011171545808" modified="20141011171550853" title="$:/temp/search">
@@ -5430,15 +5438,90 @@ html .solidborders td {  border: 1px solid black; }</pre>
 <div modified="20141017021213052" title="$:/view">
 <pre>classic</pre>
 </div>
-<div created="20140726153757112" creator="JohnTaylor" modified="20181107221914794" modifier="JohnTaylor" tags="Contents" title="Acknowledgments">
+<div created="20140726153757112" creator="JohnTaylor" modified="20181110165751437" modifier="JohnTaylor" tags="Contents" title="Acknowledgments">
 <pre>The following individual(s) are recognized for the support and/or contributions: 
 
 |Author|Contact Info|Notes|h
 |John Taylor |john.t.taylor@gmail.com|principal author |
+|Pexpect development team|https://github.com/pexpect/pexpect|pexpect package|
 |Vladimir Keleshev |vladimir@keleshev.com |Author of [[docopt|http://docopt.org]] |
 
 
 </pre>
+</div>
+<div created="20181110155051247" modified="20181110164907459" tags="Overview" title="Caveats">
+<pre>The following is list of caveats when using RATT
+
+* pexpect search from the top (oldest data first) of its input/UUT buffer.  This means you to be careful about a matching on a string that happened previously – but is not the one the script is actually interested in.
+* Searching the UUTs output for a match can take time, i.e. there can/will-be delays from when the UUT outputs the desired match content and the time when RATT/pexpect recognizes the match.  To decrease the search time, it is recommend to the following:
+** Call the ``uut.clear()`` command as late as possible before waiting on output from the UUT.  The clear() command empty's the pexpect input/UUT buffer, i.e. less to data to search through.
+** The simpler a regular expression is - the faster the search
+* Regular Expressions
+** All matches are minimal matches (non greedy)
+** ''end-of-line''.  The short version is use  ``\r\n`` to match for newline.  For a detailed explanation click [[here|https://pexpect.readthedocs.io/en/stable/overview.html#find-the-end-of-line-cr-lf-conventions]]
+* The pexpect package was original implemented on a Linux platform and its support for Windows is good, but not as good as on Linux.  Under Windows, pexpect does not spawn applications in a //terminal// and many Windows application only supports interactive behavior when they detects they are running in a //terminal//, i.e. they do ''not'' work with RATT/pexpect.
+* Support for connecting via serial ports under Linux has ''not'' been implemented (as of Nov, 2018)</pre>
+</div>
+<div created="20181110164921105" modified="20181110172248191" tags="Overview" title="Command Line Usage">
+<pre>The following is snapshot of ratty.py script's command usage.  Note: this page may/can-be out of date.  To get the current supported usage, type ``ratt.py -h``
+
+```
+usage: ratt [options] --win &lt;executable&gt;...
+       ratt [options] --linux &lt;executable&gt;...
+       ratt [options] --comport &lt;comnum&gt;
+       ratt [options] --serialports
+       ratt [options] --nouut
+
+Arguments:
+   &lt;executable&gt;         UUT is an executable and 'connecting' via stdio
+   --comport            Connect to a Window's serial port attached to the UUT
+   &lt;socketnum&gt;          The UUT's TCP socket number to connect to
+   &lt;comnum&gt;             Windows serial port number
+   --serialports        List available serial ports
+   --nouut              Does NOT connect to any UUT
+
+Options:
+   --input TSFILE       Launchs ratt in script mode and begins executing the
+                        TSFILE script.  TSFILE s assumed to be Test Suite file.
+                        A Test Suite file must be a valid python file that
+                        contains a method named main() that takes no arguments
+                        and returns a positive integer.  A return value of zero
+                        indicates that the test suited 'passed' all of its
+                        test cases; a value &gt; zero indicates one or more test
+                        suite's test cases failed.
+   --path1 PATH         Optional directory/search path used when opening
+                        script files.  This path is used if the file being
+                        opening can not be found in/relative to the CWD
+   --path2 PATH         Optional directory/search path used when opening
+                        script files.  This path is used if the file being
+                        opening can not be found in/relative to --path1
+   --path3 PATH         Optional directory/search path used when opening
+                        script files.  This path is used if the file being
+                        opening can not be found in/relative to --path2
+
+   --baud RATE          Baud rate of the serial port [Default: 115200]
+   --parity PARITY      Parity bits, values={even,odd,none} [Default: none]
+   --databits DBIT      Number of data bits of the serial port [Default: 8]
+   --stopbits SBIT      Number of Stop bits of the serial port [Default: 1]
+
+   --crlf               Sets the UUT newline to '\r\n' (instead of '\n')
+   --logfile BASE       Defines the base log file name [Default: ratt.log]
+   --log                Enables logging
+   -v                   Be verbose
+   -d, --debug          Enables additional output for debugging RATT scripts
+   -h, --help           Display help for common options/usage
+
+Examples:
+    ; UUT is the executable
+    ratt.py --win mypath\my_utt.exe
+
+    ; UUT is a physical device connected to a Windows PC on COM4
+    ratt.py --comport 4
+
+    ; Run mysuite.py script with a UUT connected via TCP (on the same PC on
+    ; port 5002) using Putty's plink
+    ratt.py --input mysuite.py --win &quot;E:\Program Files (x86)\PuTTY\plink.exe&quot; -telnet localhost -P 5002
+```</pre>
 </div>
 <div created="20141012031702770" modified="20141019031650552" title="LeftMenu">
 <pre>---
@@ -5459,14 +5542,79 @@ __''//Table-of-Contents//''__
 
 &lt;div align=&quot;center&quot;&gt;&lt;iframe src=&quot;./license.txt&quot; frameborder=&quot;0&quot; width=&quot;100%&quot; height=&quot;800&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;</pre>
 </div>
-<div created="20140726152202471" creator="JohnTaylor" modified="20181107222032783" modifier="JohnTaylor" tags="Contents" title="Overview">
+<div created="20140726152202471" creator="JohnTaylor" modified="20181110163927177" modifier="JohnTaylor" tags="Contents" title="Overview">
 <pre>!RATT  
 
-!!RATT is a Python based automated test tool:
+RATT is a Python based automated test tool built on top of the [[pexpect|https://pexpect.readthedocs.io/en/stable/index.html]] package.  RATT was specifically created to perform automated testing of [[UUTs|https://en.wikipedia.org/wiki/Device_under_test]] that support a [[Command Line Interface|https://en.wikipedia.org/wiki/Command-line_interface]], but can be used with any application that supports  interactive behavior (e.g. stdio) with the parent process that launched the application .  Below is summary of RATT's features:
 
-* blah...
+* Is a pure Python module and runs on Windows and Linux
+* Has an interactive mode in addition to running scripts
+* Test scripts are written in Python
+* Test scripts can be located anywhere and in multiple locations
+* Works with UUTs connected via:
+** A serial port
+** stdio (aka console applications)
+** Telnet/SSH (requires a suitable telent/ssh client application)
+
 
 {{LeftMenu}}</pre>
+</div>
+<div created="20181110180950003" modified="20181110184011928" tags="Overview" title="Recommended Conventions">
+<pre>Other than the requirements for the top level input script (aka ``--input TSFILE``) the RATT tool does not impose any requirements/conventions of the content of the test scripts.  That said below are recommended conventions for your test scripts.
+
+''Test Suites''
+
+* Test Suite files (``i.e. the TSFILE``) shall contain a method named ``run()`` that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  Note: the run() method can ''not'' take any arguments
+* Have a naming convention for Test Suite files that identify the file as a Test Suite
+* Test Suite files should be limited to running one or more Test Case files.  For example:
+&lt;&lt;&lt;
+```
+    # Test rattlib.uut
+    if ( passcode == config.g_passed ):
+         passcode = std.load(&quot;tc_uut.py&quot;).run()
+
+    # Test rattlib.std
+    if ( passcode == config.g_passed ):
+         passcode = std.load(&quot;tc_std.py&quot;).run()
+
+    # Test ratt search paths
+    if ( passcode == config.g_passed ):
+         passcode = std.load(&quot;tc_paths.py&quot;).run()
+```
+&lt;&lt;&lt;
+
+''Test Cases''
+
+* Test case files should contain a method named ``run()`` that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  Note: the run() method can have zero or more arguments.
+* Test case files are not limited in their content
+* Have a naming convention for Test Case files that identify the file as a Test Case
+
+''Test Actions''
+
+* Create //Action// Files for reusable test components and/or test primitives.  Action files should contain a method named ``run()``. that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  
+** Note: it is okay for the ``run()`` method to return a tuple, however index 0 of the tuple should the pass/fail result
+* Have a naming convention for Test Action files that identify the file as a Test Action.
+
+''General''
+
+* Script output
+** Use the ``rattlib.output.writeline()`` methods for outputting errors.
+** Use the ``ratllib.output.writeline_verbose()`` and ``ratllib.output.write_verbose()`` methods to output status/trace information.
+** Use the ``ratllib.output.writeline_debug()`` and ``ratllib.output.write_debug()`` methods to output detailed debugging information.
+** Enabling logging (``--log``) when running formal tests.  Also enable the verbose logging  (``--vlog``) and debugging logging (``--dlog``) options.</pre>
+</div>
+<div created="20181110151344173" modified="20181110154909694" tags="Overview" title="System Requirements">
+<pre>!!The following is list of prerequisites/requirements for RATT
+
+* Python 2.7
+* The following python packages installed:
+** pip install pexpect-serial
+** pip install pexpect
+** pip install pyserial
+* If you are connecting to a UUT via TCP/Telnet/SSH/etc. you will need to have command line client application that provides the TCP/network connectivity.  For example, to connect via Telnet (and/or raw text based TCP sockets) you need:
+** Linux: install the //telnet// client
+** Windows: install a third party command line client such as [[Putty's |https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html]] command line client [[plink|https://the.earth.li/~sgtatham/putty/0.70/htmldoc/Chapter7.html#plink]].  
+*** Note: The native Windows //telent.exe// does not work with pexpect/RATT because pexpect does  ''not'' spawn applications in a //terminal// and the Windows telnet application only supports interactive behavior when it detects it is running in a //terminal//</pre>
 </div>
 <div created="20141012034532185" modified="20141019032946319" tags="$:/tags/TopLeftBar" title="TopButtons">
 <pre>&lt;div class=&quot;tc-page-controls tc-toolbar&quot;&gt;

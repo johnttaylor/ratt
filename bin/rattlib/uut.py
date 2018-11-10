@@ -15,16 +15,28 @@ def cli( cli_command, prompt=None, max_wait_sec=2, regex_match=False, append_new
         the 'cli_command'.  The method returns None when 'prompt' is None; else
         it returns the results of the wait-for-prompt action.
     """
+    # When waiting for a trailing prompt - clear the input buffer so as to NOT
+    # match on a stale/previous prompt
+    before_cmd = ""
+    if ( prompt != None ):
+        before_cmd = clear()
+
+    # Send the command to the UUT
     config.g_uut.sendline( cli_command + config.g_newline if append_newline else cli_command  )
     config.g_uut.flush()
+    
+    # Optionally wait for the prompt
     if ( prompt != None ):
-        return waitfor( max_wait_sec, prompt, regex_match )
+        result = waitfor( max_wait_sec, prompt, regex_match )
+        if ( result != None ):
+            result = before_cmd + result
+        return result
     else:
         return None
 
 #
 def clear():
-    """ This method clears and returnsthe pexpect buffer.  The less content
+    """ This method clears and returns the pexpect buffer.  The less content
         in the pexpect buffer, the faster the 'waitfor()' performance.  
     """
 
@@ -62,12 +74,12 @@ def waitfor( timeout_sec, needle, regex_match=False ):
 
     # String match
     if ( regex_match == False ):
-        output.writeline( "Waiting up to {} seconds for the string: [{}]".format( timeout_sec, needle ) )
+        output.writeline_verbose( "Waiting up to {} seconds for the string: [{}]".format( timeout_sec, needle ) )
         idx = config.g_uut.expect_str( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout_sec )
 
     # Regex Match
     elif ( tokens[1] == 'REGEX' ):
-        output.writeline( "Waiting up to {} seconds for the regex: [{}]".format( timeout_sec, needle ) )
+        output.writeline_verbose( "Waiting up to {} seconds for the regex: [{}]".format( timeout_sec, needle ) )
         idx = config.g_uut.expect( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout_sec )
 
     result = str(config.g_uut.get_before())+str(config.g_uut.get_after()) 
