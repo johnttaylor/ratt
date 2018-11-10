@@ -17,8 +17,13 @@ Arguments:
    --nouut              Does NOT connect to any UUT
 
 Options:
-   --input SFILE        Launchs ratt in script mode and begins executing the
-                        SFILE script (which must be a valid python script)
+   --input TCFILE       Launchs ratt in script mode and begins executing the
+                        TCFILE script.  TCFILE s assumed to be Test Case file.
+                        A Test case file must be a valid python file that 
+                        contains a method named main() that takes no arguments 
+                        and returns a positive integer.  A return value of zero 
+                        indicates 'pass'; a value > zero is a 'failed' test 
+                        case.
    --path1 PATH         Optional directory/search path used when opening
                         script files.  This path is used if the file being
                         opening can not be found in/relative to the CWD
@@ -34,10 +39,11 @@ Options:
    --databits DBIT      Number of data bits of the serial port [Default: 8]
    --stopbits SBIT      Number of Stop bits of the serial port [Default: 1]
 
-   --log BASE           Defines the base log file name [Default: ratt.log]
+   --crlf               Sets the UUT newline to '\\r\\n' (instead of '\\n')
+   --logfile BASE       Defines the base log file name [Default: ratt.log]
    --log                Enables logging
    -v                   Be verbose
-   -d, --debug          Enables additional output for debugging HAL
+   -d, --debug          Enables additional output for debugging RATT scripts
    -h, --help           Display help for common options/usage
 
 Examples:
@@ -64,6 +70,7 @@ from rattlib import std
 from rattlib import uut
 from docopt.docopt import docopt
 from collections import deque
+from time import time, localtime, strftime
 
 VERSION = "0.1"
 
@@ -74,20 +81,24 @@ def main():
     # Parse command line
     args = docopt(__doc__, version=VERSION, options_first=True)
 
-    # Add the ratt directory to the system path (so module can access the 'utils' package
-    sys.path.append( __file__ )
+    # Add the ratt directory to the system path (so module can access the
+    # 'utils' package
+    sys.path.append(__file__)
 
     # Enumrate Windoze COM Ports
     if (args['--serialports'] == True):
         ports = utils.get_available_serial_ports(platform="Windows")
         for p in ports:
-            print p
+            print( p  )
         sys.exit()
 
+    # Get Newline option
+    config.newline = '\r\n' if args['--crlf'] else '\n'
+    
     # Open log file (when not disabled)
     logfile = None
-    if (args['--log'] == True ):
-        logfile = open(utils.append_current_time(args['--log']), "w")
+    if (args['--log'] == True):
+        logfile = open(utils.append_current_time(args['--logfile']), "w")
 
     ## Created 'Expected' object for a: Windoze executable UUT
     if (args['--win']):
@@ -95,56 +106,64 @@ def main():
    
     # Created 'Expected' object for a: Linux/Wsl executable UUT
     elif (args['--linux']):
-        config.g_uut = rexpect.ExpectLinuxConsole(args['<executable>'], logfile)
-   
-    # Created 'Expected' object for a: UUT via a Windoze COM Port 
+        config.g_uut = rexpect.ExpectLinuxConsole(" ".join(args['<executable>']), logfile)
+
+    # Created 'Expected' object for a: UUT via a Windoze COM Port
     elif (args['--comport']):
         serial = utils.open_serial_port('com' + args['<comnum>'], timeout=0, baudrate=int(args['--baud']), parity=args['--parity'], stopbits=int(args['--stopbits']), bytesize=int(args['--databits']))
         config.g_uut = rexpect.ExpectSerial(serial, logfile)
 
     # Create 'Expected' object for a: NO UUT
-    elif ( args['--nouut'] ):
+    elif (args['--nouut']):
         config.g_uut = rexpect.ExpectNullConsole(logfile)
 
-    print( config.g_uut )
-
     # Enable output
-    output.set_verbose_mode( args['-v'] )
-    output.set_debug_mode( args['--debug'] )
+    output.set_verbose_mode(args['-v'])
+    output.set_debug_mode(args['--debug'])
+    output.set_output_fd(sys.stdout, logfile)
+
+    # Get script paths
+    if (args['--path1'] != None):
+        config.g_script_paths.append(args['--path1'])
+    if (args['--path2'] != None):
+        config.g_script_paths.append(args['--path2'])
+    if (args['--path3'] != None):
+        config.g_script_paths.append(args['--path3'])
 
     # Check for batch mode
-    if ( args['--input'] != None ):
-        paths = []
-        if ( args['--path1'] != None ):
-            paths.append( args['--path1'] )
-        if ( args['--path2'] != None ):
-            paths.append( args['--path2'] )
-        if ( args['--path3'] != None ):
-            paths.append( args['--path3'] )
+    if (args['--input'] != None):
+        input,result = utils.importFile(args['--input'], config.g_script_paths)
+        if (input == None):
+            sys.exit(result)
 
-        input,result = utils.importFile( args['--input'], paths )
-        if ( input == None ):
-            sys.exit( result )
+        start_time = time()
+        output.writeline("------------ START: Ratt, ver={}. Start time={}".format(VERSION, strftime("%Y-%m-%d_%H.%M.%S",localtime(start_time))))
+        output.writeline("------------ RUNNING TEST CASE: {}".format(result))
+        passcode = input.main()
+        end_time = time()
+        if (passcode != 0):
+            output.writeline("------------ TEST CASE FAILED ({}).".format(passcode))
+        else:
+            output.writeline("------------ TEST CASE PASSED.")
+        output.writeline("------------ END: End time={}, delta={:.2f} mins".format(strftime("%Y-%m-%d_%H.%M.%S",localtime(end_time)), (end_time - start_time) / 60.0))
 
-        print "BATCH MODE:", input, result
+        sys.exit(passcode)
 
     # interactive mode
     else:
-        
-        output.set_output_fd( sys.stdout, logfile )
         output.writeline("")
-        output.writeline("------------ Welcome to Ratt, this is my Kung-Fu and it is strong! ------------" )
-        output.writeline("                     ver={}. Start time={}".format(VERSION,  utils.append_current_time("", "")) )
+        output.writeline("------------ Welcome to Ratt, this is my Kung-Fu and it is strong! ------------")
+        output.writeline("                   ver={}. Start time={}".format(VERSION,  utils.append_current_time("", "")))
         output.writeline("")
 
-        while( True ):
+        while(True):
             output.write(">")
             line = sys.stdin.readline().rstrip("\r\n")
             output.writeline(line, log_only=True)
             try:
-                exec( line )
+                exec(line)
             except Exception as e:
-                output.writeline( str(e) )
+                output.writeline(str(e))
 
 
 # BEGIN

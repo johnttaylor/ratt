@@ -4,31 +4,35 @@
 from rattlib import output
 import time
 import config
+import pexpect
 
 #------------------------------------------------------------------------------
 #
-def cli( cli_command ):
-    """ Sends the specified cli_command/content to the UUT.  This call does not 
-        block/wait for a response.
+def cli( cli_command, prompt=None, max_wait_sec=2, regex_match=False, append_newline=True ):
+    """ Sends the specified cli_command/content to the UUT.  If 'prompt' is 
+        None then the call does not wait for a response; else it will wait up to
+        'max_wait_sec'. When append_newline is true a 'newline' is append to 
+        the 'cli_command'.  The method returns None when 'prompt' is None; else
+        it returns the results of the wait-for-prompt action.
     """
-    config.g_uut.sendline( cli_command )
+    config.g_uut.sendline( cli_command + config.g_newline if append_newline else cli_command  )
     config.g_uut.flush()
-
+    if ( prompt != None ):
+        return waitfor( max_wait_sec, prompt, regex_match )
+    else:
+        return None
 
 #
-def clear_buffer():
+def clear():
     """ This method clears and returnsthe pexpect buffer.  The less content
-        in the pexpect buffer, the faster the 'wait_for' performance.  
+        in the pexpect buffer, the faster the 'waitfor()' performance.  
     """
-  
-    # delay slightly so that any previous action has had chance to effect the UUT
-    time.sleep( 0.35 )
 
     # Flush the UUT buffer
     max_retries = 1024
     flushed_stuff = ''
     while( max_retries ):
-        d = config.g_uut.read_nonblocking(size=512)
+        d = config.g_uut.read_nonblocking(size=1024)
         max_retries -= 1
         if ( d != None and d != ''):
             flushed_stuff += d
@@ -43,13 +47,13 @@ def clear_buffer():
 
 
 #
-def wait_for( timeout, needle, regex_match=False, output_buffer=True  ):
+def waitfor( timeout_sec, needle, regex_match=False ):
     """ Waits for the UUT to respond with 'needle'.  When 'regex' is true, then
         'needle' is assumed to be regular expression match; else a simple string
-        match is used. The 'timeout' is the maximum time in seconds to wait for the
-        matching response from the UUT.  If 'needle' was found, then the contents
-        of the pexpect buffer (up to and including 'needle') is returned; else
-        if 'needle' is not found then None is returned
+        match is used. The 'timeout_sec' is the maximum time in seconds to wait 
+        for the matching response from the UUT.  If 'needle' was found, then the 
+        contents of the pexpect buffer (up to and including 'needle') is
+        returned; else if 'needle' is not found then None is returned
     """
     
     # Housekeeping
@@ -58,13 +62,13 @@ def wait_for( timeout, needle, regex_match=False, output_buffer=True  ):
 
     # String match
     if ( regex_match == False ):
-        output.writeline( "Waiting up to {} seconds for the string: [{}]".format( timeout, needle ) )
-        idx = config.g_uut.expect_str( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout )
+        output.writeline( "Waiting up to {} seconds for the string: [{}]".format( timeout_sec, needle ) )
+        idx = config.g_uut.expect_str( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout_sec )
 
     # Regex Match
     elif ( tokens[1] == 'REGEX' ):
-        output.writeline( "Waiting up to {} seconds for the regex: [{}]".format( timeout, needle ) )
-        idx = config.g_uut.expect( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout )
+        output.writeline( "Waiting up to {} seconds for the regex: [{}]".format( timeout_sec, needle ) )
+        idx = config.g_uut.expect( [needle, pexpect.EOF, pexpect.TIMEOUT], timeout_sec )
 
     result = str(config.g_uut.get_before())+str(config.g_uut.get_after()) 
     output.writeline_verbose( result )

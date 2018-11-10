@@ -9,7 +9,6 @@ class ExpectWindowsConsole(object):
     def __init__( self, exename, logfile =None ):
         self.exename    = exename
         self.logfile    = logfile
-        print self.exename
         self.child      = pexpect.popen_spawn.PopenSpawn(exename,logfile=logfile,maxread=1)
 
     def is_detached_uut(self):
@@ -24,7 +23,7 @@ class ExpectWindowsConsole(object):
     def flush( self ):
         self.child.flush()
 
-    def read_nonblocking( self, size=1, timeout=None ):
+    def read_nonblocking( self, size=1, timeout=-1 ):
         return self.child.read_nonblocking( size, timeout )
 
 
@@ -88,43 +87,6 @@ class ExpectLinuxConsole(object):
 
 #------------------------------------------------------------------------------
 class ExpectSerial(object):
-    def __init__( self, serial, logfile=None ):
-        self.logfile     = logfile
-        self.serial      = serial
-        self.child       = SerialSpawn(serial,logfile=logfile,maxread=1)
-
-    def respawn( self ):
-        self.child = SerialSpawn(self.serial,logfile=self.logfile,maxread=1)
-
-    def is_detached_uut(self):
-        return True;
-
-    def sendline( self, s ):
-        self.child.sendline(s)
-
-    def flush( self ):
-        self.child.flush()
-
-    def read_nonblocking( self, size=1, timeout=None ):
-        return self.child.read_nonblocking( size, timeout )
-
-    def expect( self, regex_list, timeout=-1, searchwindowsize=-1 ):
-        return self.child.expect( regex_list, timeout=timeout, searchwindowsize=searchwindowsize )
-
-    def expect_str( self, string_list, timeout=-1, searchwindowsize=-1 ):
-        return self.child.expect_exact( string_list, timeout=timeout, searchwindowsize=searchwindowsize )
-
-    def get_before( self ):
-        return self.child.before
-
-    def get_after( self ):
-        return self.child.after
-
-    def close( self ):
-        self.child.close()
-
-#------------------------------------------------------------------------------
-class ExpectTcp(object):
     def __init__( self, serial, logfile=None ):
         self.logfile     = logfile
         self.serial      = serial

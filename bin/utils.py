@@ -3,17 +3,38 @@
 import os
 import sys
 import imp
-from time import gmtime, strftime
+from time import strftime
 import serial
 import config
-
+import subprocess
 
 #------------------------------------------------------------------------------
 def append_current_time( base_name, separator='_' ):
     """ Appends the current time to 'base_name'
     """
-    return base_name + separator + strftime("%Y-%m-%d_%H.%M.%S", gmtime()) 
+    return base_name + separator + strftime("%Y-%m-%d_%H.%M.%S") 
 
+
+#------------------------------------------------------------------------------
+def run_shell( cmd, stdout=False, on_err_msg=None ):
+    """ Executes a shell command and returns a tuple of the command return
+        code and the output of the command.  When on_err_msg is NOT set to 
+        the None AND an error occured while executing 'cmd', the calling script 
+        will be exited and display the contents of on_err_msg.  When the stdout 
+        is true, the command's output will displayed on the console as it executes 
+        and it will NOT be captured as a return value.
+    """
+        
+    if ( stdout ):
+        p = subprocess.Popen( cmd, shell=True )
+    else:
+        p = subprocess.Popen( cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE )
+
+    r = p.communicate()
+    if ( p.returncode != 0 and on_err_msg != None ):
+        exit(on_err_msg)
+
+    return (p.returncode, "{} {}".format(r[0],r[1]) )
 
 #------------------------------------------------------------------------------
 def get_available_serial_ports( platform="Windows" ):
@@ -126,11 +147,11 @@ def importFile(filename, search_paths=None):
         return config.g_utils_import_dictionary[modname],fullpath
 
     # No search paths...
-    if (search_paths == None):
+    if (search_paths == None or len(search_paths) == 0 ):
         try:
             fd = open(fullpath, "rt")
         except Exception as e:
-            return None, "ERROR. Unable to open the file {}.  Error={}".format(fullpath,str(e))
+            return None, "ERROR. Unable to open the file {} (No search paths provided).  Error={}".format(fullpath,str(e))
 
     # Search the search paths
     else:

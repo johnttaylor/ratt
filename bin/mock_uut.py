@@ -172,7 +172,7 @@ class Input_handler:
             
             # Cancel app if the socket is disconnected
             if not t:
-                self.root.quit()            
+                sys.exit("Socket has been disconnected from the client side.")
                 return False
                 
         except socket.error, e:
@@ -182,8 +182,7 @@ class Input_handler:
                 
             # Cancel app if there is a socket error
             else:
-                print(  "Socket Error:", e )
-                sys.exit()
+                sys.exit( "Socket Error: " + str(e) )
                 return False
                 
         # Process the input
