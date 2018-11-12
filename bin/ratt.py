@@ -58,7 +58,7 @@ Examples:
 
     ; Run mysuite.py script with a UUT connected via TCP (on the same PC on 
     ; port 5002) using Putty's plink 
-    ratt.py --input mysuite.py --win "E:\\Program Files (x86)\\PuTTY\\plink.exe" -telnet localhost -P 5002
+    ratt.py --input mysuite.ratt --win "E:\\Program Files (x86)\\PuTTY\\plink.exe" -telnet localhost -P 5002
 
 """
 
@@ -72,6 +72,7 @@ import config
 from rattlib import output
 from rattlib import std
 from rattlib import uut
+from rattlib import man
 from docopt.docopt import docopt
 from collections import deque
 from time import time, localtime, strftime
@@ -131,6 +132,7 @@ def main():
     output.set_output_fd(sys.stdout, logfile)
 
     # Get script paths
+    config.g_script_paths.append('.')
     if (args['--path1'] != None):
         config.g_script_paths.append(args['--path1'])
     if (args['--path2'] != None):
@@ -140,7 +142,7 @@ def main():
 
     # Check for batch mode
     if (args['--input'] != None):
-        input,result = utils.importFile(args['--input'], config.g_script_paths)
+        input,result = utils.import_file(args['--input'], config.g_script_paths)
         if (input == None):
             sys.exit(result)
 

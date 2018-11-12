@@ -273,9 +273,13 @@ Error message and password prompt
 
 <li>Overview</li>
 
+<li>rattlib</li>
+
 <li>Recommended Conventions</li>
 
 <li>System Requirements</li>
+
+<li>Test Scripts</li>
 
 <li>TopButtons</li>
 
@@ -5322,7 +5326,7 @@ html .solidborders td {  border: 1px solid black; }</pre>
 <div modified="20141230012524223" title="$:/state/toc/Contents-Overview--242358753">
 <pre>open</pre>
 </div>
-<div list="[[Recommended Conventions]] [[Command Line Usage]] Overview" title="$:/StoryList">
+<div list="rattlib [[Test Scripts]] [[Recommended Conventions]] [[Command Line Usage]] Overview" title="$:/StoryList">
 <pre></pre>
 </div>
 <div created="20141011164829984" modified="20141020024516096" title="$:/temp/advancedsearch">
@@ -5542,13 +5546,14 @@ __''//Table-of-Contents//''__
 
 &lt;div align=&quot;center&quot;&gt;&lt;iframe src=&quot;./license.txt&quot; frameborder=&quot;0&quot; width=&quot;100%&quot; height=&quot;800&quot;&gt;&lt;/iframe&gt;&lt;/div&gt;</pre>
 </div>
-<div created="20140726152202471" creator="JohnTaylor" modified="20181110163927177" modifier="JohnTaylor" tags="Contents" title="Overview">
+<div created="20140726152202471" creator="JohnTaylor" modified="20181111235533727" modifier="JohnTaylor" tags="Contents" title="Overview">
 <pre>!RATT  
 
 RATT is a Python based automated test tool built on top of the [[pexpect|https://pexpect.readthedocs.io/en/stable/index.html]] package.  RATT was specifically created to perform automated testing of [[UUTs|https://en.wikipedia.org/wiki/Device_under_test]] that support a [[Command Line Interface|https://en.wikipedia.org/wiki/Command-line_interface]], but can be used with any application that supports  interactive behavior (e.g. stdio) with the parent process that launched the application .  Below is summary of RATT's features:
 
 * Is a pure Python module and runs on Windows and Linux
 * Has an interactive mode in addition to running scripts
+** Includes listing all available scripts and help for each script.
 * Test scripts are written in Python
 * Test scripts can be located anywhere and in multiple locations
 * Works with UUTs connected via:
@@ -5559,8 +5564,27 @@ RATT is a Python based automated test tool built on top of the [[pexpect|https:/
 
 {{LeftMenu}}</pre>
 </div>
-<div created="20181110180950003" modified="20181110184011928" tags="Overview" title="Recommended Conventions">
+<div created="20181111212802440" modified="20181112000818777" tags="Overview" title="rattlib">
+<pre>The Ratt tool contains a internal package - rattlib - that provides a small set of Python functions, entities, etc. to aid in writing Test scripts.
+
+//Note: Organizations are welcome to add additional modules to the rattlib package.//
+
+The rattlib package is broken down into the following modules:
+
+* ''man'' - Provides methods to get help on the available test scripts.
+* ''output'' - Provides a collection of methods to output/log messages to the console and/or log file.
+* ''std'' - Provides basic functionality.  Most notable the ``std.load()`` method is used to load a test script.
+* ''uut'' - Provides a collection of method to interact with the UUT (Unit-Under-Test)
+
+Interactive help is available for all modules in the rattlib, e.g. when running ratt in interactive mode you can type: ``help(std)``
+
+
+</pre>
+</div>
+<div created="20181110180950003" modified="20181111223844658" tags="Overview" title="Recommended Conventions">
 <pre>Other than the requirements for the top level input script (aka ``--input TSFILE``) the RATT tool does not impose any requirements/conventions of the content of the test scripts.  That said below are recommended conventions for your test scripts.
+
+//''Note:'' the rattlib.man() module assumes these conventions are followed//
 
 ''Test Suites''
 
@@ -5571,37 +5595,48 @@ RATT is a Python based automated test tool built on top of the [[pexpect|https:/
 ```
     # Test rattlib.uut
     if ( passcode == config.g_passed ):
-         passcode = std.load(&quot;tc_uut.py&quot;).run()
+         passcode = std.load(&quot;tc_uut&quot;).run()
 
     # Test rattlib.std
     if ( passcode == config.g_passed ):
-         passcode = std.load(&quot;tc_std.py&quot;).run()
+         passcode = std.load(&quot;tc_std&quot;).run()
 
     # Test ratt search paths
     if ( passcode == config.g_passed ):
-         passcode = std.load(&quot;tc_paths.py&quot;).run()
+         passcode = std.load(&quot;tc_paths&quot;).run()
 ```
 &lt;&lt;&lt;
 
 ''Test Cases''
 
-* Test case files should contain a method named ``run()`` that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  Note: the run() method can have zero or more arguments.
+* Test case files should contain a method named ``run()`` that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  
+** The ``run()`` method can have zero or more arguments.
+** Strongly encouraged that the ``run()`` method have single exit/return point.
 * Test case files are not limited in their content
 * Have a naming convention for Test Case files that identify the file as a Test Case
 
 ''Test Actions''
 
 * Create //Action// Files for reusable test components and/or test primitives.  Action files should contain a method named ``run()``. that returns a positive integer where zero indicates pass; greater than 0 indicates failure.  
-** Note: it is okay for the ``run()`` method to return a tuple, however index 0 of the tuple should the pass/fail result
+** The ``run()`` method can have zero or more arguments.
+** Strongly encouraged that the ``run()`` method have single exit/return point.
+** The ``run()`` method can return a tuple, however index 0 of the tuple should the pass/fail result
+* Test Action files are not limited in their content
 * Have a naming convention for Test Action files that identify the file as a Test Action.
 
 ''General''
 
 * Script output
-** Use the ``rattlib.output.writeline()`` methods for outputting errors.
+** Use the ``rattlib.output.writeline()`` method for outputting errors.
+** Use the ``rattlib.output.write_entry()`` and ``rattlib.output.write_exit()``methods to //record// the entry and exit of the ``main()`` and ``run()`` methods in all of the script files.
 ** Use the ``ratllib.output.writeline_verbose()`` and ``ratllib.output.write_verbose()`` methods to output status/trace information.
 ** Use the ``ratllib.output.writeline_debug()`` and ``ratllib.output.write_debug()`` methods to output detailed debugging information.
-** Enabling logging (``--log``) when running formal tests.  Also enable the verbose logging  (``--vlog``) and debugging logging (``--dlog``) options.</pre>
+** Enabling logging (``--log``) when running formal tests.  Also enable the verbose logging  (``--vlog``) and debugging logging (``--dlog``) options.
+* Comments/Documentation
+** Each script file (Test Suite, Test Case, Test Action) should have a module comment (i.e. a docstring comment at the start of the file). 
+*** For Test Suite and Test Case scripts, include in the module level comments the scripts's pre-conditions and post-conditions.
+** Each script file's //entry// function should have docstring comment that describes the function, its function argument(s) and return value(s)
+</pre>
 </div>
 <div created="20181110151344173" modified="20181110154909694" tags="Overview" title="System Requirements">
 <pre>!!The following is list of prerequisites/requirements for RATT
@@ -5615,6 +5650,23 @@ RATT is a Python based automated test tool built on top of the [[pexpect|https:/
 ** Linux: install the //telnet// client
 ** Windows: install a third party command line client such as [[Putty's |https://www.chiark.greenend.org.uk/~sgtatham/putty/latest.html]] command line client [[plink|https://the.earth.li/~sgtatham/putty/0.70/htmldoc/Chapter7.html#plink]].  
 *** Note: The native Windows //telent.exe// does not work with pexpect/RATT because pexpect does  ''not'' spawn applications in a //terminal// and the Windows telnet application only supports interactive behavior when it detects it is running in a //terminal//</pre>
+</div>
+<div created="20181111210425794" modified="20181111212800013" tags="Overview" title="Test Scripts">
+<pre>Test scripts are written in Python.  The Ratt package does not impose constraints and/or limit the content of the test scripts - with the exception of the ``TSFILE`` specified on the [[command line|Command Line Usage]] when launching the ratt.py script.  That said, there are [[recommended conventions|Recommended Conventions]] for the test scripts.  See [[rattlib]] for how a test script is loaded.
+
+''Script Locations''
+
+* The test scripts can be located anywhere on your PC (or on the  network as a 'pathable' file).  
+* Up to 3 separate paths can be specified.
+** When loading a test script (including the ``TSFILE``) the specified paths are searched to find desired file. The search order is:
+**# The current working directory (where the rattt.py script is launched)  
+**# The ``--path1`` directory (if specified)
+**# The ``--path2`` directory (if specified)
+**# The ``--path3`` directory (if specified)
+* Test scripts are loaded by file name relative to the paths described above
+** Test script file names essential global with respect to the set path specified when the ratt.py script is launched.  This is by design.  What does this mean:
+**# If the are two files named ``mytest.py`` within the defined search path - the first file found (defined by the searched) is loaded.
+**# The test designer can define a set of //backing// test scripts located at path N, and (if desired) can //override// one or more of the //backing// scripts by placing script(s)  with same name at path N-1</pre>
 </div>
 <div created="20141012034532185" modified="20141019032946319" tags="$:/tags/TopLeftBar" title="TopButtons">
 <pre>&lt;div class=&quot;tc-page-controls tc-toolbar&quot;&gt;

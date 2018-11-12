@@ -146,14 +146,13 @@ class ExpectNullConsole(object):
 
     # Return the last index -->assumption is that the last item in the list is EOF or TIMEOUT
     def expect_str( self, string_list, timeout=-1, searchwindowsize=-1 ):
-        return len(regex_list)  -1
-        return self.child.expect_exact( string_list, timeout=timeout, searchwindowsize=searchwindowsize )
+        return len(string_list)  -1
 
     def get_before( self ):
-        return none 
+        return None 
 
     def get_after( self ):
-        return none
+        return None
 
     def close( self ):
         pass

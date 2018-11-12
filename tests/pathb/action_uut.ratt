@@ -1,7 +1,21 @@
+""" Test Action: 
+
+    Configures the Mock UUT to generate two spam messsages and
+    waits for a specific message.
+"""
+
 from rattlib import *
 import config
 
 def run( timeout ):
+    """ Entry function.
+
+        The 'timeout' arugment specifies how long to wait, in seconds, for the 
+        UUT to respond with the desired output.
+
+        Returns g_passed if succesful; else g_failed is returned
+    """ 
+
     output.write_entry(__name__)
     passcode = config.g_passed
 
@@ -16,6 +30,10 @@ def run( timeout ):
         passcode = config.g_failed
     else:    
         output.writeline_verbose( "uut.waitfor(): MATCHED 'message1', from: [{}] ".format( r ) )
+
+    # Disable the spam messages, i.e. leave the UUT in the same state as found it
+    uut.cli( '.spam 1 0 "turnoff";' );
+    uut.cli( '.spam 2 0 "turnoff";' );
 
     output.write_exit(__name__)
     return passcode

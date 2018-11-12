@@ -100,7 +100,7 @@ def open_serial_port(serialPort, baudrate=115200, parity="none", stopbits=1, byt
 
 
 #------------------------------------------------------------------------------
-def importCode(code, name):
+def import_code(code, name):
     """ code can be any object containing code -- string, file object, or
         compiled code object. Returns a new module object initialized
         by dynamically importing the given code.  If the module has already
@@ -123,9 +123,9 @@ def importCode(code, name):
         return None
 
 #
-def importFile(filename, search_paths=None):
+def import_file(filename, search_paths=None):
     """ Wrapper function to dynamically load/import the specified python
-        script file.  The file name - sans the .py file extension - is used
+        script file.  The file name - sans the file extension - is used
         for the module name.
 
         'filename' should be without a absolute path.  The contents of 'search_paths'
@@ -164,11 +164,50 @@ def importFile(filename, search_paths=None):
                 break
             except Exception as e:
                 if (num_paths == 0):
-                    return None, "ERROR. Unable to open the file {}.  Error={}".format(fname,str(e))
+                    return None, "ERROR. Unable to open the file {}.  Error={}".format(filename,str(e))
 
     # Load the script/module
-    m = importCode(fd, modname)
+    m = import_code(fd, modname)
+    config.g_utils_import_paths[modname] = fullpath
     fd.close()
     return m,fullpath
 
+#
+def find_files( file_extension=config.g_ratt_file_extension , search_paths=None):
+    """ Generates a dictionary of files using the specified search paths.  Once 
+        a file is found at higher priority path - it is not added to the return
+        dictionary a second time.  The search order is:
+        1) The current working directory 
+        2) Then 'search_paths' is searched starting with index 0
 
+        If no files are found, the None is returned
+    """
+
+    # Dictionary of found files: key=file name, value=path found at
+    d = {}
+
+    # function to add found files to the dictionary
+    def search_directory( d, file_extension, path ):
+        if ( path != None ):
+            for file in os.listdir(path):
+                if file.endswith(file_extension):
+                    if ( file in d ):
+                        pass
+                    else:
+                        d[file] = path
+
+        return d
+
+    # No search paths...
+    if (search_paths == None or len(search_paths) == 0 ):
+        d = search_directory( d, file_extension, ".")
+
+    # Search the search paths
+    else:
+        num_paths = len(search_paths)
+        for p in search_paths:
+            d = search_directory( d, file_extension, p )
+
+
+    # Return the list of found scripts
+    return d
