@@ -27,7 +27,12 @@ def man( script_name, file_extension=config.g_ratt_file_extension ):
     # get module help
     indent  = "    "
     modhelp = indent + pydoc.getdoc(m).replace("\n", "\n"+indent)
-    runhelp = indent + pydoc.getdoc(m.run).replace("\n", "\n"+indent)
+    try:
+        runhelp = indent + pydoc.getdoc(m.run).replace("\n", "\n"+indent)
+    except:
+        runhelp = None
+
+    # Display the help text
     output.writeline( "" )
     output.writeline( "MODULE NAME:" )
     output.writeline( indent + modname ) 
@@ -38,9 +43,10 @@ def man( script_name, file_extension=config.g_ratt_file_extension ):
     output.writeline( "DESCRIPTION:" )
     output.writeline( modhelp )
     output.writeline( "" )
-    output.writeline( "RUN() FUNCTION:")
-    output.writeline( runhelp )
-    output.writeline( "" )
+    if ( runhelp != None ):
+        output.writeline( "RUN() FUNCTION:")
+        output.writeline( runhelp )
+        output.writeline( "" )
 
 
 #
