@@ -1,6 +1,6 @@
 """ Test Case: 
 
-    Verifies functionaly in the rattlib.uut module
+    Verifies functionally in the rattlib.uut module
 
     Pre-Conditions:  The Mocked UUT must be running.
 

@@ -165,7 +165,9 @@ def main():
         output.writeline("------------ Welcome to Ratt, this is my Kung-Fu and it is strong! ------------")
         output.writeline("                   ver={}. Start time={}".format(VERSION,  utils.append_current_time("", "")))
         output.writeline("")
-
+        exec( 'from rattlib import *' )
+        exec( 'import config' )
+        
         while(True):
             output.write(">")
             line = sys.stdin.readline().rstrip("\r\n")
