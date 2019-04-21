@@ -1,5 +1,7 @@
 """ Utility functions
 """
+from __future__ import absolute_import
+from __future__ import print_function
 import os
 import sys
 import imp
@@ -34,7 +36,10 @@ def run_shell( cmd, stdout=False, on_err_msg=None ):
     if ( p.returncode != 0 and on_err_msg != None ):
         exit(on_err_msg)
 
-    return (p.returncode, "{} {}".format(r[0],r[1]) )
+    r0 = r[0].decode().rstrip() if r[0] != None else ""
+    r1 = r[1].decode().rstrip() if r[1] != None else ""
+            
+    return (p.returncode, "{} {}".format(r0,r1) )
 
 #------------------------------------------------------------------------------
 def get_available_serial_ports( platform="Windows" ):
@@ -115,11 +120,11 @@ def import_code(code, name):
     try:
         module = imp.new_module(name)
         config.g_utils_import_dictionary[name] = module
-        exec code in module.__dict__
+        exec(code, module.__dict__)
         return module
 
     except Exception as e:
-        print "Error={}".format( str(e) )
+        print("Error={}".format( str(e) ))
         return None
 
 #
@@ -167,7 +172,8 @@ def import_file(filename, search_paths=None):
                     return None, "ERROR. Unable to open the file {}.  Error={}".format(filename,str(e))
 
     # Load the script/module
-    m = import_code(fd, modname)
+    code = fd.read()
+    m = import_code(code, modname)
     config.g_utils_import_paths[modname] = fullpath
     fd.close()
     return m,fullpath

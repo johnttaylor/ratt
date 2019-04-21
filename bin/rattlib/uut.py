@@ -22,7 +22,8 @@ def cli( cli_command, prompt=None, max_wait_sec=2, regex_match=False, append_new
         before_cmd = clear()
 
     # Send the command to the UUT
-    config.g_uut.sendline( cli_command + config.g_newline if append_newline else cli_command  )
+    cmd = cli_command + config.g_newline if append_newline else cli_command
+    config.g_uut.sendline( cmd  )
     config.g_uut.flush()
     
     # Optionally wait for the prompt

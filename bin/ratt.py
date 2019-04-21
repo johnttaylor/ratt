@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 """
 Test Tool that automates issuing actions to a Under-Under-Test (UUT)
 ===============================================================================
@@ -94,7 +94,7 @@ def main():
     if (args['--serialports'] == True):
         ports = utils.get_available_serial_ports(platform="Windows")
         for p in ports:
-            print( p  )
+            print( p )
         sys.exit()
 
     # Get Newline option
