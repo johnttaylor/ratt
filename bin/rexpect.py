@@ -33,11 +33,18 @@ class ExpectWindowsConsole(object):
     def expect_str( self, string_list, timeout=-1, searchwindowsize=-1 ):
         return self.child.expect_exact( string_list, timeout=timeout, searchwindowsize=searchwindowsize )
 
+
     def get_before( self ):
-        return self.child.before
+        r =  self.child.before
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def get_after( self ):
-        return self.child.after
+        r =  self.child.after
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def close( self ):
         try:
@@ -74,10 +81,16 @@ class ExpectLinuxConsole(object):
         return self.child.expect_exact( string_list, timeout=timeout, searchwindowsize=searchwindowsize )
 
     def get_before( self ):
-        return self.child.before
+        r =  self.child.before
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def get_after( self ):
-        return self.child.after
+        r =  self.child.after
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def close( self ):
         try:
@@ -114,10 +127,16 @@ class ExpectSerial(object):
         return self.child.expect_exact( string_list, timeout=timeout, searchwindowsize=searchwindowsize )
 
     def get_before( self ):
-        return self.child.before
+        r =  self.child.before
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def get_after( self ):
-        return self.child.after
+        r =  self.child.after
+        if ( isinstance(r,bytes) == True ):
+            r = str(r,'utf-8')
+        return r
 
     def close( self ):
         self.child.close()

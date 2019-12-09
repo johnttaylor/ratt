@@ -43,12 +43,12 @@ def clear():
 
     # Flush the UUT buffer
     max_retries = 1024
-    flushed_stuff = 'x'
+    flushed_stuff = ''
     while( max_retries ):
         d = config.g_uut.read_nonblocking(size=1024)
         max_retries -= 1
         if ( d != None and d != ''):
-            flushed_stuff += str(d)
+            flushed_stuff += str(d,'utf-8')
         else:
             output.writeline_verbose( flushed_stuff )
             return flushed_stuff
