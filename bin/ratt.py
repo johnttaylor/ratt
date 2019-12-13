@@ -77,7 +77,7 @@ from docopt.docopt import docopt
 from collections import deque
 from time import time, localtime, strftime
 
-VERSION = "0.1"
+VERSION = "0.2"
 
 
 # ------------------------------------------------------------------------------
@@ -94,7 +94,7 @@ def main():
     if (args['--serialports'] == True):
         ports = utils.get_available_serial_ports(platform="Windows")
         for p in ports:
-            print( p )
+            print(p)
         sys.exit()
 
     # Get Newline option
@@ -102,12 +102,12 @@ def main():
     
     # Open log file (when not disabled)
     logfile = None
-    if (args['--log'] == True):
-        if ( args['--vlog'] ):
+    if (args['--log'] == True or args['--vlog'] or args['--dlog']):
+        if (args['--vlog']):
             config.g_verbose_logs = True
-        if ( args['--dlog'] ):
+        if (args['--dlog']):
             config.g_debug_logs = True
-        logfile = open(utils.append_current_time(args['--logfile']), "w")
+        logfile = open(utils.append_current_time(args['--logfile']), "wb")
 
     ## Created 'Expected' object for a: Windoze executable UUT
     if (args['--win']):
@@ -165,8 +165,8 @@ def main():
         output.writeline("------------ Welcome to Ratt, this is my Kung-Fu and it is strong! ------------")
         output.writeline("                   ver={}. Start time={}".format(VERSION,  utils.append_current_time("", "")))
         output.writeline("")
-        exec( 'from rattlib import *' )
-        exec( 'import config' )
+        exec('from rattlib import *')
+        exec('import config')
         
         while(True):
             output.write(">")

@@ -3,10 +3,10 @@
 """
 import config
 
-g_verbose      = False
-g_debug        = False
-g_fdout        = None
-g_logout       = None
+g_verbose = False
+g_debug = False
+g_fdout = None
+g_logout = None
 g_ident_string = ""
 
 #------------------------------------------------------------------------------
@@ -15,10 +15,10 @@ def write(string, log_only=False, always_log=False):
         'always_log' must be false to output the string to the console.
     """
 
-    if ( g_fdout != None and log_only == False and always_log == False ):
+    if (g_fdout != None and log_only == False and always_log == False):
         g_fdout.write(string)
-    if ( g_logout != None ):
-        g_logout.write(string)
+    if (g_logout != None):
+        g_logout.write(bytes(string,'utf-8'))
 
 #
 def writeline(string, log_only=False, always_log=False):
@@ -27,10 +27,10 @@ def writeline(string, log_only=False, always_log=False):
         string to the console.
     """
 
-    if ( g_fdout != None and log_only == False and always_log == False):
+    if (g_fdout != None and log_only == False and always_log == False):
         g_fdout.write(string + "\n")
-    if ( g_logout != None ):
-        g_logout.write(string + "\n")
+    if (g_logout != None):
+        g_logout.write(bytes(string + "\n", 'utf-8'))
 
 #
 def write_verbose(string, log_only=False):
@@ -38,7 +38,7 @@ def write_verbose(string, log_only=False):
         output has been enabled.
     """
 
-    if ( g_verbose or config.g_verbose_logs):
+    if (g_verbose or config.g_verbose_logs):
         write(string,log_only,config.g_verbose_logs)
 
 #
@@ -46,7 +46,7 @@ def writeline_verbose(string, log_only=False):
     """ Same as writeline(), except the output is only 'enabled' when verbose
         output has been enabled.
     """
-    if ( g_verbose or config.g_verbose_logs):
+    if (g_verbose or config.g_verbose_logs):
         writeline(string,log_only,config.g_verbose_logs)
 
 #
@@ -55,7 +55,7 @@ def write_debug(string, log_only=False):
         output has been enabled.
     """
 
-    if ( g_debug or config.g_debug_logs):
+    if (g_debug or config.g_debug_logs):
         write(string,log_only,config.g_debug_logs)
 
 #
@@ -64,12 +64,12 @@ def writeline_debug(string, log_only=False):
         output has been enabled.
     """
 
-    if ( g_debug or config.g_debug_logs):
+    if (g_debug or config.g_debug_logs):
         writeline(string,log_only,config.g_debug_logs)
 
 
 #------------------------------------------------------------------------------
-def write_entry( module_name, function_name="", format_string=config.g_entry_banner, indent_prefix=config.indent_prefix ):
+def write_entry(module_name, function_name="", format_string=config.g_entry_banner, indent_prefix=config.indent_prefix):
     """ Writes the formated string - with the specified module/function name.
         The format string should assume that indent string is the first argument,
         the module_name is the second argument, and function_name is the third
@@ -79,10 +79,10 @@ def write_entry( module_name, function_name="", format_string=config.g_entry_ban
     """
 
     global g_ident_string
-    writeline( format_string.format( g_ident_string, module_name, function_name ) )
+    writeline(format_string.format(g_ident_string, module_name, function_name))
     g_ident_string += indent_prefix
 
-def write_exit(  module_name, function_name="", format_string=config.g_exit_banner, indent_prefix=config.indent_prefix ):
+def write_exit(module_name, function_name="", format_string=config.g_exit_banner, indent_prefix=config.indent_prefix):
     """ Writes the formated string - with the specified module/funciton name.
         The format string should assume that indent string is the first argument,
         the module_name is the second argument, and function_name is the third
@@ -93,11 +93,11 @@ def write_exit(  module_name, function_name="", format_string=config.g_exit_bann
 
     global g_ident_string
     g_ident_string = g_ident_string[:-len(indent_prefix)]
-    writeline( format_string.format( g_ident_string, module_name, function_name ) )
+    writeline(format_string.format(g_ident_string, module_name, function_name))
 
 
 #------------------------------------------------------------------------------
-def set_verbose_mode( enabled ):
+def set_verbose_mode(enabled):
     """ Enables/Disabled verbose output
     """
 
@@ -105,7 +105,7 @@ def set_verbose_mode( enabled ):
     g_verbose = enabled
 
 #
-def set_debug_mode ( enabled ):
+def set_debug_mode(enabled):
     """ Enables/Disabled debug output
     """
 
@@ -119,7 +119,7 @@ def set_output_fd(out_fd, log_fd):
 
     global g_fdout
     global g_logout
-    g_fdout  = out_fd
+    g_fdout = out_fd
     g_logout = log_fd
 
 
