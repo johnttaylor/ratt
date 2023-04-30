@@ -66,7 +66,7 @@ from docopt.docopt import docopt
 from collections import deque
 from time import time, localtime, strftime
 
-VERSION = "0.3"
+VERSION = "2.0.0"
 
 
 # ------------------------------------------------------------------------------
