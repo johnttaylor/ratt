@@ -123,7 +123,7 @@ def find_files( file_extension=config.g_ratt_file_extension , search_paths=None)
         1) The current working directory 
         2) Then 'search_paths' is searched starting with index 0
 
-        If no files are found, the None is returned
+        If no files are found, THEN an empty dictionary is returned
     """
 
     # Dictionary of found files: key=file name, value=path found at
@@ -151,6 +151,13 @@ def find_files( file_extension=config.g_ratt_file_extension , search_paths=None)
         for p in search_paths:
             d = search_directory( d, file_extension, p )
 
+    # Strip out all 'ignored' files
+    fdict = {}
+    for k,v in d.items():
+        if ( k in config.g_ignore_pyfiles ):
+            continue
+        fdict[k] = v
 
     # Return the list of found scripts
-    return d
+    return fdict
+
