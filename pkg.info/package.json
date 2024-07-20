@@ -21,13 +21,20 @@
   },
   "publish": {
     "current": {
-      "comment": "Refactor to use importlib instead of imp",
-      "version": "2.0.1",
-      "date": "Thu Jun  6 23:59:29 2024",
-      "timestamp": 1717718369,
+      "comment": "Fix regex issues in docopt",
+      "version": "2.0.2",
+      "date": "Sat Jul 20 17:50:47 2024",
+      "timestamp": 1721497847,
       "changes": null
     },
     "history": [
+      {
+        "comment": "Refactor to use importlib instead of imp",
+        "version": "2.0.1",
+        "date": "Thu Jun  6 23:59:29 2024",
+        "timestamp": 1717718369,
+        "changes": null
+      },
       {
         "comment": "refactoring/clean-up (is breaking change) and bug fixing",
         "version": "2.0.0",
